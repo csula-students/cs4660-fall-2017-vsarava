@@ -48,8 +48,8 @@ def construct_graph_from_file(graph, file_path):
 
     for d in range(1, len(text), 1):
         lines = text[d].split(":")
-        from_node = getNodeData(int(lines[0]), nodes)
-        to_node = getNodeData(int(lines[1]), nodes)
+        from_node = getNode(int(lines[0]), nodes)
+        to_node = getNode(int(lines[1]), nodes)
         weight = int(lines[2])
         edges.append(Edge(from_node, to_node, weight))
 
@@ -60,7 +60,7 @@ def construct_graph_from_file(graph, file_path):
 
     return graph
 
-    def getNodeData(data, nodes):
+def getNode(data, nodes):
     for i in nodes:
         if i.data == data:
             return i
@@ -124,7 +124,7 @@ class AdjacencyList(object):
         return self.adjacency_list[node]
 
     def add_node(self, node):
-        if node in adjacency_list.keys():
+        if node in self.adjacency_list.keys():
             return False
         else:
             self.adjacency_list[node] = []
