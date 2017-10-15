@@ -255,7 +255,6 @@ class AdjacencyMatrix(object):
             return True
 
 
-
     def remove_edge(self, edge):
         from_node = edge.from_node
         to_node = edge.to_node
