@@ -33,30 +33,33 @@ def construct_graph_from_file(graph, file_path):
     """
     nodes = []
     edges = []
-    f = open(file_path, "r")
-    if f.mode == 'r':
-        fl = f.readlines()
-        length = int(fl[0])
-        for i in range(length):
-            nodes.append(Node(i))
-        for x in range(1, len(fl), 1):
-            data = fl[x].split(":")
-            from_node = getNode(int(data[0]), nodes)
-            to_node = getNode(int(data[1]), nodes)
-            weight = int(data[2])
-            edges.append(Edge(from_node, to_node, weight))
+
+    f = open(file_path, encoding='utf-8')
+    text = f.readlines()
+    size = int(text[0])
+    
+    for n in range(size):
+        nodes.append(Node(n))
+
+    for d in range(1, len(text), 1):
+        lines = text[d].split(":")
+        from_node = getNode(int(lines[0]), nodes)
+        to_node = getNode(int(lines[1]), nodes)
+        weight = int(lines[2])
+        edges.append(Edge(from_node, to_node, weight))
 
     for node in nodes:
         graph.add_node(node)
     for edge in edges:
         graph.add_edge(edge)
+
     return graph
 
-
 def getNode(data, nodes):
-    for x in nodes:
-        if x.data == data:
-            return x
+    for i in nodes:
+        if i.data == data:
+            return i
+    
     return None
 
 class Node(object):
@@ -103,18 +106,17 @@ class AdjacencyList(object):
     store nodes and edges
     """
     def __init__(self):
-        # adjacencyList should be a dictionary of node to edges
+        # adjacencyList should be a dictonary of node to edges
         self.adjacency_list = {}
-        self.nodes = []
 
     def adjacent(self, node_1, node_2):
-        if node_2 in [x.to_node for x in self.adjacency_list[node_1]]:
+        if node_2 in self.adjacency_list[node_1]:
             return True
         else:
             return False
 
     def neighbors(self, node):
-        return [x.to_node for x in self.adjacency_list[node]]
+        return self.adjacency_list[node]
 
     def add_node(self, node):
         if node in self.adjacency_list.keys():
@@ -123,60 +125,37 @@ class AdjacencyList(object):
             self.adjacency_list[node] = []
             return True
 
-    def add_grid_node(self, node):
-        self.adjacency_list[node] = []
-        self.nodes.append(node)
-        return True
-
-    def add_grid_edge(self, edge):
-        from_node = edge.from_node
-        self.adjacency_list[from_node].append(edge)
-        return True
-
     def remove_node(self, node):
         if node in self.adjacency_list.keys():
             for n in self.adjacency_list:
-                for x in self.adjacency_list[n]:
-                    if node == x.to_node:
-                        self.adjacency_list[n].remove(x)
+                if node in self.adjacency_list[n]:
+                    self.adjacency_list[n].remove(node)
             del self.adjacency_list[node]
             return True
         else:
             return False
 
-    
     def add_edge(self, edge):
         from_node = edge.from_node
         to_node = edge.to_node
-        weight = edge.weight
         if from_node not in self.adjacency_list.keys() or to_node not in self.adjacency_list.keys():
             return False
-        elif to_node in [x.to_node for x in self.adjacency_list[from_node]]:
+        elif to_node in self.adjacency_list[from_node]:
             return False
         else:
-            self.adjacency_list[from_node].append(edge)
+            self.adjacency_list[from_node].append(to_node)
             return True
 
     def remove_edge(self, edge):
         from_node = edge.from_node
-        if from_node not in self.adjacency_list.keys():
+        to_node = edge.to_node
+        if from_node not in self.adjacency_list.keys() or to_node not in self.adjacency_list.keys():
             return False
-        elif edge not in self.adjacency_list[from_node]:
+        elif to_node not in self.adjacency_list[from_node]:
             return False
         else:
-            self.adjacency_list[from_node].remove(edge)
+            self.adjacency_list[from_node].remove(to_node)
             return True
-    def distance(self, from_node, to_node):
-        for x in self.adjacency_list[from_node]:
-            if x.to_node == to_node:
-                return x.weight
-        return 0
-
-    def get_edge(self, from_node, to_node):
-        for x in self.adjacency_list[from_node]:
-            if x.to_node == to_node:
-                return x
-        return None
 
 class AdjacencyMatrix(object):
     def __init__(self):
@@ -191,10 +170,10 @@ class AdjacencyMatrix(object):
         return self.adjacency_matrix[self.__get_node_index(node_1)][self.__get_node_index(node_2)] > 0
 
     def neighbors(self, node):
-        adj = self.adjacency_matrix[self.__get_node_index(node)]
+        adj_node = self.adjacency_matrix[self.__get_node_index(node)]
         nodes = []
-        for i in range(len(adj)):
-            if adj[i] > 0:
+        for i in range(len(adj_node)):
+            if adj_node[i] > 0:
                 nodes.append(self.nodes[i])
         return nodes
 
@@ -203,39 +182,21 @@ class AdjacencyMatrix(object):
             return False
         else:
             self.nodes.append(node)
-            for x in range(len(self.adjacency_matrix)):
-                self.adjacency_matrix[x].append(0)
-            new_row = []
-            for y in range(len(self.adjacency_matrix) + 1):
-                new_row.append(0)
-            self.adjacency_matrix.append(new_row)
+            for i in range(len(self.adjacency_matrix)):
+                self.adjacency_matrix[i].append(0)
+            add_row = []
+            for j in range(len(self.adjacency_matrix) + 1):
+                add_row.append(0)
+            self.adjacency_matrix.append(add_row)
             return True
-    def add_grid_node(self, node):
-        self.nodes.append(node)
-        for x in range(len(self.adjacency_matrix)):
-            self.adjacency_matrix[x].append(0)
-        new_row = []
-        for y in range(len(self.adjacency_matrix) + 1):
-            new_row.append(0)
-        self.adjacency_matrix.append(new_row)
-        return True
-
-    def add_grid_edge(self, edge):
-        from_node = edge.from_node
-        to_node = edge.to_node
-        weight = edge.weight
-        from_node_index = self.__get_node_index(from_node)
-        to_node_index = self.__get_node_index(to_node)
-        self.adjacency_matrix[from_node_index][to_node_index] = weight
-        return True
 
     def remove_node(self, node):
         if node not in self.nodes:
             return False
         else:
             node_index = self.__get_node_index(node)
-            for y in self.adjacency_matrix:
-                y.pop(node_index)
+            for i in self.adjacency_matrix:
+                i.pop(node_index)
             self.adjacency_matrix.remove(self.adjacency_matrix[node_index])
             self.nodes.remove(node)
             return True
@@ -254,8 +215,6 @@ class AdjacencyMatrix(object):
             self.adjacency_matrix[from_node_index][to_node_index] = weight
             return True
 
-
-
     def remove_edge(self, edge):
         from_node = edge.from_node
         to_node = edge.to_node
@@ -270,13 +229,6 @@ class AdjacencyMatrix(object):
     def __get_node_index(self, node):
         """helper method to find node index"""
         return self.nodes.index(node)
-
-    def distance(self, from_node, to_node):
-        return self.adjacency_matrix[self.__get_node_index(from_node)][self.__get_node_index(to_node)]
-
-    def get_edge(self, from_node, to_node):
-        weight =  self.adjacency_matrix[self.__get_node_index(from_node)][self.__get_node_index(to_node)]
-        return Edge(from_node, to_node, weight)
 
 class ObjectOriented(object):
     """ObjectOriented defines the edges and nodes as both list"""
@@ -294,9 +246,10 @@ class ObjectOriented(object):
 
     def neighbors(self, node):
         neighbors = []
-        for e in self.edges:
-            if e.from_node == node:
-                neighbors.append(e.to_node)
+        for ed in self.edges:
+            if ed.from_node == node:
+                neighbors.append(ed.to_node)
+
         return neighbors
 
     def add_node(self, node):
@@ -306,18 +259,10 @@ class ObjectOriented(object):
             self.nodes.append(node)
             return True
 
-    def add_grid_node(self, node):
-        self.nodes.append(node)
-        return True
-
-    def add_grid_edge(self, edge):
-        self.edges.append(edge)
-        return True
-
     def remove_node(self, node):
-        for e in self.edges:
-            if e.from_node == node or e.to_node == node:
-                self.edges.remove(e)
+        for ed in self.edges:
+            if ed.from_node == node or ed.to_node == node:
+                self.edges.remove(ed)
         if node in self.nodes:
             self.nodes.remove(node)
             return True
@@ -339,15 +284,3 @@ class ObjectOriented(object):
             return True
         else:
             return False
-
-    def distance(self, from_node, to_node):
-        for edge in self.edges:
-            if edge.from_node ==from_node and edge.to_node == to_node:
-                return edge.weight
-        return 0
-
-    def get_edge(self, from_node, to_node):
-        for edge in self.edges:
-            if edge.from_node ==from_node and edge.to_node == to_node:
-                return edge
-        return None
